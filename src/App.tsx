@@ -144,7 +144,9 @@ export default function App() {
 
     for (let r = top; r <= bottom; r++) {
       for (let c = left; c <= right; c++) {
-        if (MAZE[r] && MAZE[r][c] === 1) return false;
+        // Handle horizontal wrap-around for column checking
+        const wrappedC = (c + MAZE[0].length) % MAZE[0].length;
+        if (MAZE[r] && MAZE[r][wrappedC] === 1) return false;
       }
     }
     return true;
@@ -177,6 +179,11 @@ export default function App() {
     if (canMove(nextX, nextY)) {
       hero.x = nextX;
       hero.y = nextY;
+
+      // Wrap around tunnel
+      const mazeWidth = MAZE[0].length * TILE_SIZE;
+      if (hero.x < -TILE_SIZE / 2) hero.x = mazeWidth - TILE_SIZE / 2;
+      if (hero.x > mazeWidth - TILE_SIZE / 2) hero.x = -TILE_SIZE / 2;
     } else {
       // Hit a wall, stop moving
       hero.dx = 0;
@@ -186,7 +193,7 @@ export default function App() {
     // Collectibles
     const centerX = hero.x + TILE_SIZE / 2;
     const centerY = hero.y + TILE_SIZE / 2;
-    const col = Math.floor(centerX / TILE_SIZE);
+    const col = (Math.floor(centerX / TILE_SIZE) + MAZE[0].length) % MAZE[0].length;
     const row = Math.floor(centerY / TILE_SIZE);
 
     if (mazeRef.current[row] && mazeRef.current[row][col] === 2) {
@@ -277,6 +284,11 @@ export default function App() {
 
       ghost.x += ghost.dx;
       ghost.y += ghost.dy;
+
+      // Ghost Wrap around tunnel
+      const mazeWidth = MAZE[0].length * TILE_SIZE;
+      if (ghost.x < -TILE_SIZE / 2) ghost.x = mazeWidth - TILE_SIZE / 2;
+      if (ghost.x > mazeWidth - TILE_SIZE / 2) ghost.x = -TILE_SIZE / 2;
 
       // Collision with Hero
       const dist = Math.hypot(ghost.x - hero.x, ghost.y - hero.y);
